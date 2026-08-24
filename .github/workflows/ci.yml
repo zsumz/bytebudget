@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: "1"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  canonical:
+    name: canonical
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchains and target
+        run: |
+          rustup toolchain install 1.88.0 \
+            --profile minimal \
+            --component clippy,rustfmt \
+            --target thumbv7em-none-eabi
+          rustup toolchain install stable --profile minimal
+
+      - name: Install Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22.18.0
+          cache: npm
+          cache-dependency-path: smoke/package-lock.json
+
+      - name: Install qualification tools
+        run: |
+          cargo +stable install zcheck --version 0.0.1 --locked
+          cargo +stable install zrail --version 0.0.2 --locked
+
+      - name: Fetch the locked dependency graph
+        run: cargo +1.88.0 fetch --locked
+
+      - name: Run canonical qualification
+        env:
+          ZCHECK_EVIDENCE_DIR: ${{ runner.temp }}/zcheck-evidence
+        run: >-
+          zcheck run check
+          --format github
+          --logs-dir "$ZCHECK_EVIDENCE_DIR/logs"
+          --receipt "$ZCHECK_EVIDENCE_DIR/receipt.json"
+
+      - name: Upload qualification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: zcheck-canonical
+          path: ${{ runner.temp }}/zcheck-evidence
+          if-no-files-found: error
+
+  conversion-32-bit:
+    name: 32-bit conversion behavior
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Install 32-bit system support
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes gcc-multilib
+
+      - name: Install Rust 1.88 and the 32-bit target
+        run: >-
+          rustup toolchain install 1.88.0
+          --profile minimal
+          --target i686-unknown-linux-gnu
+
+      - name: Run all tests as 32-bit executables
+        run: >-
+          cargo +1.88.0 test
+          --target i686-unknown-linux-gnu
+          --all-targets
+          --locked
+          --offline
