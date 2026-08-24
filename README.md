@@ -1,0 +1,101 @@
+<p align="center">
+  <img src="bytebudget-logo.svg" alt="bytebudget" width="720">
+</p>
+
+<p align="center"><strong>Exact byte accounting for bounded systems.</strong></p>
+
+<p align="center">
+  A tiny, deterministic vocabulary for retained-storage charges and bounded
+  capacity accounting.
+</p>
+
+<p align="center">
+  <a href="#use">Use</a>
+  <span> · </span>
+  <a href="#model">Model</a>
+  <span> · </span>
+  <a href="#measurement-happens-once">Retained storage</a>
+  <span> · </span>
+  <a href="#scope">Scope</a>
+</p>
+
+<br />
+
+## Use
+
+```rust
+use bytebudget::{ByteBudget, ByteCount};
+
+let mut budget = ByteBudget::new(ByteCount::new(1_024));
+let charge = ByteCount::new(256);
+
+budget.try_reserve(charge)?;
+assert_eq!(budget.available(), ByteCount::new(768));
+
+budget.release(charge)?;
+assert_eq!(budget.used(), ByteCount::ZERO);
+
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+## Model
+
+| Type | Purpose |
+| --- | --- |
+| `ByteCount` | Fixed-width byte quantity with checked arithmetic |
+| `Retained` | Consumer-defined retained-storage measurement |
+| `ByteBudget` | Aggregate use beneath an immutable limit |
+
+Conversions use `ByteCountOverflow`, capacity rejection uses
+`CapacityExceeded`, and accounting underflow uses `OverRelease`.
+
+## The accounting unit is `u64`
+
+`ByteCount` is stable across ordinary 32-bit and 64-bit targets and independent
+of pointer width. `usize` conversions are fallible, while scalar composition
+uses only `checked_add` and `checked_sub`; implicit, saturating, and wrapping
+arithmetic are deliberately absent.
+
+## Measurement happens once
+
+`Retained` reports the variable storage kept alive by one value under the
+implementation's documented model. Implementations include transitively owned
+backing storage, charge allocated capacity when it remains allocated, never
+undercount, and remain deterministic and side-effect-free.
+
+Measure at admission, store the charge beside the admitted value, and release
+that stored charge later. Do not measure the value again during release.
+Container accounting remains consumer-owned; there are no blanket container
+implementations.
+
+## Budget operations are transactional
+
+A budget maintains `used <= limit`. Reservation succeeds exactly when the
+requested amount fits; release succeeds exactly when the amount is in use.
+Rejected operations leave every observable field unchanged.
+
+`ByteBudget` is not cloneable, copyable, or defaultable. Its limit is immutable,
+and reservations have no identity or guard.
+
+## Scope
+
+`bytebudget` is `no_std`, allocation-free, dependency-free, feature-free, and
+contains no unsafe code. It does not inspect allocators, parse byte units,
+perform I/O, synchronize budgets, track reservation identities, change limits,
+or choose eviction and backpressure policy.
+
+## Qualification
+
+```sh
+zcheck run check
+```
+
+The canonical graph covers formatting, Clippy, Rust 1.88 and stable tests,
+doctests, rustdoc, `no_std`, mutation qualification, package verification, and
+zrail architecture policy.
+
+## License
+
+The crate is Apache-2.0 licensed. See [LICENSE](LICENSE). The logo embeds Space
+Grotesk under the SIL Open Font License 1.1; see
+[LICENSES/Space-Grotesk-OFL.txt](LICENSES/Space-Grotesk-OFL.txt).
