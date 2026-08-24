@@ -1,0 +1,185 @@
+schema = 1
+default = "check"
+
+[execution]
+jobs = 4
+default_timeout = "20m"
+repository_state = "preserve"
+
+[tasks.zrail]
+description = "Enforce reviewed architecture and repository policy."
+run = ["zrail", "check"]
+tools = ["zrail"]
+inputs = ["zrail.toml", "zrail.lock"]
+
+[tasks.git-diff]
+description = "Reject whitespace errors in unstaged changes."
+run = ["git", "diff", "--check"]
+tools = ["git"]
+
+[tasks.git-diff-cached]
+description = "Reject whitespace errors in staged changes."
+run = ["git", "diff", "--cached", "--check"]
+tools = ["git"]
+
+[tasks.repository]
+description = "Validate architecture policy and repository diff hygiene."
+needs = ["zrail", "git-diff", "git-diff-cached"]
+
+[tasks.format]
+description = "Validate Rust formatting."
+run = ["cargo", "fmt", "--all", "--", "--check"]
+tools = ["cargo"]
+resources = ["cargo-target"]
+
+[tasks.clippy]
+description = "Run Clippy on every target with warnings denied."
+run = [
+  "cargo",
+  "clippy",
+  "--all-targets",
+  "--locked",
+  "--offline",
+  "--",
+  "-D",
+  "warnings",
+]
+tools = ["cargo"]
+resources = ["cargo-target"]
+
+[tasks.docs]
+description = "Build library documentation with warnings denied."
+run = ["cargo", "doc", "--no-deps", "--locked", "--offline"]
+env = { RUSTDOCFLAGS = "-D warnings" }
+tools = ["cargo"]
+resources = ["cargo-target"]
+
+[tasks.no-std]
+description = "Compile the library for a target without a standard library."
+run = [
+  "cargo",
+  "check",
+  "--lib",
+  "--target",
+  "thumbv7em-none-eabi",
+  "--locked",
+  "--offline",
+]
+tools = ["cargo"]
+resources = ["cargo-target"]
+
+[tasks.rust-lint]
+description = "Validate formatting, lints, documentation, and no-std support."
+needs = ["format", "clippy", "docs", "no-std"]
+
+[tasks.test-msrv]
+description = "Run all test targets on Rust 1.88."
+run = ["cargo", "test", "--all-targets", "--locked", "--offline"]
+tools = ["cargo"]
+resources = ["cargo-target"]
+
+[tasks.test-stable]
+description = "Run all test targets on current stable Rust."
+run = ["cargo", "+stable", "test", "--all-targets", "--locked", "--offline"]
+tools = ["cargo"]
+resources = ["cargo-target"]
+
+[tasks.doctest]
+description = "Run examples and compile-fail public API contracts."
+run = ["cargo", "test", "--doc", "--locked", "--offline"]
+tools = ["cargo"]
+resources = ["cargo-target"]
+
+[tasks.mutation]
+description = "Prove the contract suite rejects five accounting regressions."
+run = [
+  "cargo",
+  "test",
+  "--test",
+  "model",
+  "--locked",
+  "--offline",
+  "--",
+  "mutation_suite_kills_accounting_regressions",
+  "--ignored",
+  "--exact",
+]
+tools = ["cargo"]
+resources = ["cargo-target"]
+
+[tasks.rust-test]
+description = "Validate direct, model, persona, and public API behavior."
+needs = ["test-msrv", "test-stable", "doctest", "mutation"]
+
+[tasks.package-archive]
+description = "Build and verify the generated publishable crate archive."
+run = ["cargo", "package", "--locked", "--offline", "--allow-dirty"]
+tools = ["cargo"]
+resources = ["cargo-target"]
+
+[tasks.package-test]
+description = "Run all tests from the extracted publishable archive."
+run = [
+  "cargo",
+  "test",
+  "--manifest-path",
+  "target/package/bytebudget-0.0.1-rc.1/Cargo.toml",
+  "--all-targets",
+  "--locked",
+  "--offline",
+]
+tools = ["cargo"]
+resources = ["cargo-target"]
+needs = ["package-archive"]
+
+[tasks.smoke-dependencies]
+description = "Install the locked Smoque authoring and runtime tools."
+run = [
+  "npm",
+  "ci",
+  "--prefix",
+  "smoke",
+  "--ignore-scripts",
+  "--no-audit",
+  "--no-fund",
+]
+tools = ["npm"]
+inputs = ["smoke/package.json", "smoke/package-lock.json"]
+
+[tasks.smoke-typecheck]
+description = "Type-check the erasable Smoque suite."
+run = [
+  "node",
+  "smoke/node_modules/typescript/bin/tsc",
+  "--project",
+  "smoke/tsconfig.json",
+]
+tools = ["node"]
+inputs = ["smoke/package.smoke.ts", "smoke/tsconfig.json"]
+needs = ["smoke-dependencies"]
+
+[tasks.smoke-package]
+description = "Consume the publishable crate from a fresh external binary."
+run = [
+  "node",
+  "smoke/node_modules/smoque/dist/cli/main.js",
+  "run",
+  "smoke/package.smoke.ts",
+  "--ci",
+]
+tools = ["cargo", "node"]
+inputs = ["smoke/package.smoke.ts"]
+resources = ["cargo-target"]
+needs = ["smoke-dependencies"]
+
+[tasks.smoke]
+description = "Validate the publishable artifact through Smoque."
+needs = ["smoke-typecheck", "smoke-package"]
+
+[tasks.package]
+description = "Validate the complete publishable crate archive."
+needs = ["package-test", "smoke"]
+
+[tasks.check]
+description = "Run complete local bytebudget qualification."
+needs = ["repository", "rust-lint", "rust-test", "package"]
