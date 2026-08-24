@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "22.19.21",
+    "smoque": "0.1.1",
+    "typescript": "5.9.3"
+  }
+}
