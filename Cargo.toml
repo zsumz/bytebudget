@@ -1,0 +1,27 @@
+[package]
+name = "bytebudget"
+version = "0.0.1-rc.1"
+edition = "2024"
+rust-version = "1.88"
+description = "Exact, allocation-free byte accounting for bounded systems"
+license = "Apache-2.0"
+repository = "https://github.com/zsumz/bytebudget"
+readme = "README.md"
+keywords = ["bytes", "capacity", "memory", "no-std", "resource-limits"]
+categories = ["no-std", "data-structures"]
+include = [
+    "/src/**",
+    "/tests/**",
+    "/Cargo.toml",
+    "/Cargo.lock",
+    "/README.md",
+    "/bytebudget-logo.svg",
+    "/LICENSES/Space-Grotesk-OFL.txt",
+    "/LICENSE",
+]
+
+[dependencies]
+
+[lints.rust]
+missing_docs = "deny"
+unsafe_code = "forbid"
