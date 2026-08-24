@@ -1,0 +1,190 @@
+schema = 1
+adapters = ["rust"]
+
+[repository]
+roots = ["."]
+exclude = ["smoke/node_modules/**"]
+workspace_members = "exact"
+nested_git = "deny"
+submodules = "deny"
+symlinks = "inside"
+
+[[gate]]
+name = "check"
+kind = "local"
+path = "zcheck.toml"
+inputs = [
+  ".github/workflows/ci.yml",
+  ".gitignore",
+  "Cargo.toml",
+  "Cargo.lock",
+  "README.md",
+  "bytebudget-logo.svg",
+  "LICENSES/Space-Grotesk-OFL.txt",
+  "LICENSE",
+  "rust-toolchain.toml",
+  "rustfmt.toml",
+  "clippy.toml",
+  "smoke/package.json",
+  "smoke/package-lock.json",
+  "smoke/package.smoke.ts",
+  "smoke/tsconfig.json",
+]
+reason = "The declarative canonical qualification graph and its reviewed inputs."
+
+[[gate]]
+name = "ci"
+kind = "ci"
+path = ".github/workflows/ci.yml"
+inputs = ["rust-toolchain.toml"]
+requires = ["check"]
+reason = "Hosted qualification runs the canonical graph and real 32-bit tests."
+
+[[invariant]]
+id = "ACCOUNT-01"
+title = "Budget transitions preserve the aggregate accounting invariant"
+status = "enforced"
+document = "README.md#budget-operations-are-transactional"
+evidence = [
+  "rust-test:tests/budget.rs::one_byte_over_is_rejected_with_exact_payload_and_no_mutation",
+  "rust-test:tests/budget.rs::over_release_is_rejected_with_exact_payload_and_no_mutation",
+  "rust-test:tests/model.rs::every_small_domain_reservation_matches_the_integer_model",
+  "rust-test:tests/model.rs::every_small_domain_release_matches_the_integer_model",
+  "rust-test:tests/model.rs::every_short_small_domain_command_sequence_matches_the_model",
+  "rust-test:tests/model.rs::mutation_suite_kills_accounting_regressions",
+  "gate:check",
+  "gate:ci",
+]
+
+[[invariant]]
+id = "SCALAR-01"
+title = "Byte counts retain fixed-width checked arithmetic semantics"
+status = "enforced"
+document = "README.md#the-accounting-unit-is-u64"
+evidence = [
+  "rust-test:tests/count.rs::transparent_layout_matches_u64",
+  "rust-test:tests/count.rs::checked_addition_accepts_the_boundary_and_rejects_overflow",
+  "rust-test:tests/count.rs::checked_subtraction_accepts_zero_and_rejects_underflow",
+  "rust-test:tests/count.rs::usize_rejects_counts_above_the_32_bit_boundary",
+  "gate:check",
+  "gate:ci",
+]
+
+[[invariant]]
+id = "OWNERSHIP-01"
+title = "Owners measure once and release the stored admission charge"
+status = "enforced"
+document = "README.md#measurement-happens-once"
+evidence = [
+  "rust-test:tests/personas.rs::bounded_mailbox_measures_once_and_releases_the_admission_charge",
+  "rust-test:tests/personas.rs::transactional_admission_rolls_back_the_exact_first_charge",
+  "rust-test:tests/personas.rs::partial_drain_releases_completed_segments_incrementally",
+  "rust-test:tests/personas.rs::shared_backing_storage_is_conservatively_charged_per_reference",
+  "gate:check",
+]
+
+[dependencies]
+mode = "locked"
+unassigned_packages = "deny"
+cycles = "deny"
+
+[source.rust]
+module_docs = "required"
+facades = "declarative"
+entrypoints = "declarative"
+tests = "sibling"
+
+[source.rust.macros]
+mode = "deny-unreviewed"
+
+[[source.rust.macros.allow]]
+name = "Clone"
+reason = "Fixed scalar and structured error values use the built-in Clone derive."
+
+[[source.rust.macros.allow]]
+name = "Copy"
+reason = "Fixed scalar and structured error values use the built-in Copy derive."
+
+[[source.rust.macros.allow]]
+name = "Debug"
+reason = "Public values expose deterministic diagnostics through built-in Debug."
+
+[[source.rust.macros.allow]]
+name = "Default"
+reason = "Only the zero-valued scalar uses the built-in Default derive."
+
+[[source.rust.macros.allow]]
+name = "Eq"
+reason = "Public values support exact equality through the built-in Eq derive."
+
+[[source.rust.macros.allow]]
+name = "Hash"
+reason = "The fixed scalar supports deterministic keyed collections."
+
+[[source.rust.macros.allow]]
+name = "Ord"
+reason = "The fixed scalar supports exact total ordering."
+
+[[source.rust.macros.allow]]
+name = "PartialEq"
+reason = "Public values support exact equality through the built-in PartialEq derive."
+
+[[source.rust.macros.allow]]
+name = "PartialOrd"
+reason = "The fixed scalar supports exact ordering comparisons."
+
+[[source.rust.macros.allow]]
+name = "assert"
+reason = "Separate test targets assert public invariants and model relations."
+
+[[source.rust.macros.allow]]
+name = "assert_eq"
+reason = "Separate test targets compare exact public values and state snapshots."
+
+[[source.rust.macros.allow]]
+name = "format"
+reason = "Mutation qualification creates isolated uniquely named test directories."
+
+[[source.rust.macros.allow]]
+name = "write"
+reason = "Structured errors use core formatting without allocation."
+
+[source.rust.hygiene]
+unsafe = "deny"
+lint_suppressions = "deny"
+deny_methods = ["unwrap", "expect"]
+deny_macros = ["panic", "todo", "unimplemented", "unreachable", "dbg"]
+
+[source.rust.size.facade]
+target = 80
+hard = 120
+
+[source.rust.size.implementation]
+target = 240
+hard = 300
+
+[source.rust.size.test]
+target = 300
+hard = 300
+
+[source.rust.size.auxiliary]
+target = 300
+hard = 300
+
+[[layer]]
+name = "library"
+packages = ["bytebudget"]
+may_depend_on = []
+reason = "One focused dependency-free accounting library."
+
+[layer.dependencies]
+external = "locked"
+
+[[scope]]
+name = "allocation-free-core"
+include = ["src/**"]
+exclude = []
+reason = "The library core has no allocation, synchronization, or process capabilities."
+
+[scope.symbols]
+deny = ["alloc", "std", "core::sync::atomic"]
