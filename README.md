@@ -16,9 +16,7 @@
   <span> · </span>
   <a href="#model">Model</a>
   <span> · </span>
-  <a href="#measurement-happens-once">Retained storage</a>
-  <span> · </span>
-  <a href="#version-policy">Version policy</a>
+  <a href="#contract">Contract</a>
   <span> · </span>
   <a href="#scope">Scope</a>
 </p>
@@ -62,44 +60,22 @@ fn main() {
 Conversions use `ByteCountOverflow`, capacity rejection uses
 `CapacityExceeded`, and accounting underflow uses `OverRelease`.
 
-## The accounting unit is `u64`
+<a id="the-accounting-unit-is-u64"></a>
+<a id="measurement-happens-once"></a>
+<a id="charge-lifetime-and-provenance"></a>
+<a id="budget-operations-are-transactional"></a>
 
-`ByteCount` is stable across ordinary 32-bit and 64-bit targets and independent
-of pointer width. `usize` conversions are fallible, while scalar composition
-uses only `checked_add` and `checked_sub`; implicit, saturating, and wrapping
-arithmetic are deliberately absent.
+## Contract
 
-## Measurement happens once
+`ByteCount` uses `u64` on every target. `Retained` values are measured at
+admission and never remeasured during release. Growth first reserves its added
+charge and updates the stored charge transactionally. `ByteBudget` keeps
+`used <= limit`; rejected reservations and releases leave it unchanged.
 
-`Retained` reports the variable storage kept alive by one value under the
-implementation's documented model. Implementations include transitively owned
-backing storage, charge allocated capacity when it remains allocated, never
-undercount, and remain deterministic and side-effect-free.
-
-Measure at admission, store the charge beside the admitted value, and release
-that stored charge later. Do not measure the value again during release.
-Container accounting remains consumer-owned; there are no blanket container
-implementations.
-
-## Charge lifetime and provenance
-
-A stored charge must remain a conservative upper bound for the value's
-retained storage for its entire lifetime in the bounded owner. If an admitted
-value can grow, reserve the additional charge before installing that growth and
-update the stored charge in the same transaction. Otherwise, prohibit growth.
-
-`ByteBudget` validates aggregate arithmetic, not charge ownership. Releasing
-the wrong charge succeeds whenever that count does not exceed aggregate use.
-Keep the exact charge beside each admitted value and release it exactly once.
-
-## Budget operations are transactional
-
-A budget maintains `used <= limit`. Reservation succeeds exactly when the
-requested amount fits; release succeeds exactly when the amount is in use.
-Rejected operations leave every observable field unchanged.
-
-`ByteBudget` is not cloneable, copyable, or defaultable. Its limit is immutable,
-and reservations have no identity or guard.
+The complete contracts cover
+[retained charges](https://github.com/zsumz/bytebudget/blob/main/docs/retained-charges.md)
+and
+[accounting operations](https://github.com/zsumz/bytebudget/blob/main/docs/accounting-contract.md).
 
 ## Scope
 
@@ -114,16 +90,15 @@ or choose eviction and backpressure policy.
 zcheck run check
 ```
 
-The canonical graph covers formatting, Clippy, Rust 1.88 and stable tests,
-doctests, rustdoc, `no_std`, mutation qualification, package verification, and
-zrail architecture policy.
+See the full
+[qualification contract](https://github.com/zsumz/bytebudget/blob/main/docs/qualification.md).
 
 ## Version policy
 
 The minimum supported Rust version is 1.88 and the qualification graph executes
-it directly. MSRV increases are treated as compatibility changes. Before 1.0,
-releases may deliberately refine the public API; use an exact version pin when
-evaluating a release candidate.
+it directly. MSRV increases are compatibility changes. Before 1.0, releases may
+deliberately refine the public API; use an exact version pin when evaluating a
+release candidate.
 
 ## License
 

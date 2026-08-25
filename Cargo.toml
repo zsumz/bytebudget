@@ -12,6 +12,7 @@ categories = ["no-std", "data-structures"]
 include = [
     "/src/**",
     "/tests/**",
+    "/docs/**",
     "/Cargo.toml",
     "/Cargo.lock",
     "/README.md",

@@ -2,7 +2,7 @@
 schema = 1
 semantics = 2
 producer = "0.0.2"
-contract_sha256 = "04c105de57813b06c01899f3e6a8e7a451979835291f6f9f0bc6b3865f70cc8a"
+contract_sha256 = "52e6e3081ab26a7a3881754135cd3a3143d9794baea278c8f535f7477cc1ce7b"
 ratchet = []
 
 [[package]]
@@ -28,7 +28,7 @@ sha256 = "8a4e39f8095635e033adeacdf03ed27329f7f270e0b51e295566f9b84bad421c"
 
 [[gate.input]]
 path = "Cargo.toml"
-sha256 = "bc14c60a8ec37072edeec23cf0600ca81f82c101618a587dd2b69bde87e4fb80"
+sha256 = "24fc6e1bba8823adaf47b3d164a3f1a7c7bc9a415ae87308322138d0e46026aa"
 
 [[gate.input]]
 path = "LICENSE"
@@ -40,7 +40,7 @@ sha256 = "18a4de52385f6b988782639d5d0cc1326e5a8c2de9a7f01d7b20d9aedcc60943"
 
 [[gate.input]]
 path = "README.md"
-sha256 = "c7f77b72e7b6eddf2223e242837ca7f55930c670c62d4deac6b8c1dd7f7a2465"
+sha256 = "224d92c112587f5d20e1d9dabfc2ce4f0eba90fc652c4cd091522e22d747aaf2"
 
 [[gate.input]]
 path = "bytebudget-logo.svg"
@@ -49,6 +49,18 @@ sha256 = "551517865f76a0130ba0b0d813f8cf72d2a532548bceeb9cc17580de53b43d34"
 [[gate.input]]
 path = "clippy.toml"
 sha256 = "aefb4a84fd7980f98c1d578cdfb01797a0722e75ef36a5fc56bf3c7c5c6b5060"
+
+[[gate.input]]
+path = "docs/accounting-contract.md"
+sha256 = "a059dcdcf10cf0c0b7f4cf02c3b3460cbb66e42c1df22eb90764e133ba8f6cb5"
+
+[[gate.input]]
+path = "docs/qualification.md"
+sha256 = "c5c176ca4663c28cfa9a7cc49caa3cf4bdbe60f8f1232938d686f0ba6a585c4a"
+
+[[gate.input]]
+path = "docs/retained-charges.md"
+sha256 = "27363b367434ab89375be5bb62e3669a682ce8d97521e3525ea948aba293936c"
 
 [[gate.input]]
 path = "rust-toolchain.toml"
@@ -68,7 +80,7 @@ sha256 = "1ddc57cda323f4f70c916727b58b954b22a523d0ea267396fe29c3fd4af6219d"
 
 [[gate.input]]
 path = "smoke/package.smoke.ts"
-sha256 = "2d9349ebe23a632945c2ed671709952440a54cfa5afa1fdc0ee769f688e42fc5"
+sha256 = "f139ee62a250687a7123c715ea899c7396968f77bbb0a7acba5f1c3bdc3ed43d"
 
 [[gate.input]]
 path = "smoke/tsconfig.json"

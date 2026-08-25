@@ -19,6 +19,9 @@ inputs = [
   "Cargo.toml",
   "Cargo.lock",
   "README.md",
+  "docs/accounting-contract.md",
+  "docs/qualification.md",
+  "docs/retained-charges.md",
   "bytebudget-logo.svg",
   "LICENSES/Space-Grotesk-OFL.txt",
   "LICENSE",
@@ -44,7 +47,7 @@ reason = "Hosted qualification runs the canonical graph and real 32-bit tests."
 id = "ACCOUNT-01"
 title = "Budget transitions preserve the aggregate accounting invariant"
 status = "enforced"
-document = "README.md#budget-operations-are-transactional"
+document = "docs/accounting-contract.md#budget-operations-are-transactional"
 evidence = [
   "rust-test:tests/budget.rs::one_byte_over_is_rejected_with_exact_payload_and_no_mutation",
   "rust-test:tests/budget.rs::over_release_is_rejected_with_exact_payload_and_no_mutation",
@@ -60,7 +63,7 @@ evidence = [
 id = "SCALAR-01"
 title = "Byte counts retain fixed-width checked arithmetic semantics"
 status = "enforced"
-document = "README.md#the-accounting-unit-is-u64"
+document = "docs/accounting-contract.md#the-accounting-unit-is-u64"
 evidence = [
   "rust-test:tests/count.rs::transparent_layout_matches_u64",
   "rust-test:tests/count.rs::checked_addition_accepts_the_boundary_and_rejects_overflow",
@@ -74,7 +77,7 @@ evidence = [
 id = "OWNERSHIP-01"
 title = "Owners preserve exact conservative charges across ownership"
 status = "enforced"
-document = "README.md#charge-lifetime-and-provenance"
+document = "docs/retained-charges.md#charge-lifetime-and-provenance"
 evidence = [
   "rust-test:tests/personas.rs::bounded_mailbox_measures_once_and_releases_the_admission_charge",
   "rust-test:tests/personas.rs::admitted_growth_reserves_the_delta_before_replacing_storage",
