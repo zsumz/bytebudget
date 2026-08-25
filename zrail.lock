@@ -12,7 +12,7 @@ dependency = []
 [[gate]]
 name = "check"
 path = "zcheck.toml"
-sha256 = "e45b51830cc8872e0be35d957705e7e6fb114a1740282deda62c14755cb01871"
+sha256 = "024887100ad9f3c1081274c3c306815e1e5fb2accfc2f87bc6897fea775662be"
 
 [[gate.input]]
 path = ".github/workflows/ci.yml"

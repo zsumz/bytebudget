@@ -11,6 +11,7 @@ description = "Enforce reviewed architecture and repository policy."
 run = ["zrail", "check"]
 tools = ["zrail"]
 inputs = ["zrail.toml", "zrail.lock"]
+needs = ["smoke-dependencies"]
 
 [tasks.git-diff]
 description = "Reject whitespace errors in unstaged changes."
