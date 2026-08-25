@@ -112,26 +112,19 @@ resources = ["cargo-target"]
 description = "Validate direct, model, persona, and public API behavior."
 needs = ["test-msrv", "test-stable", "doctest", "mutation"]
 
-[tasks.package-archive]
-description = "Build and verify the generated publishable crate archive."
-run = ["cargo", "package", "--locked", "--offline", "--allow-dirty"]
-tools = ["cargo"]
-resources = ["cargo-target"]
-
 [tasks.package-test]
-description = "Run all tests from the extracted publishable archive."
+description = "Build, inspect, test, and consume the publishable crate archive."
 run = [
-  "cargo",
-  "test",
-  "--manifest-path",
-  "target/package/bytebudget-0.0.1-rc.1/Cargo.toml",
-  "--all-targets",
-  "--locked",
-  "--offline",
+  "node",
+  "smoke/node_modules/smoque/dist/cli/main.js",
+  "run",
+  "smoke/package.smoke.ts",
+  "--ci",
 ]
-tools = ["cargo"]
+tools = ["cargo", "node"]
+inputs = ["smoke/package.smoke.ts"]
 resources = ["cargo-target"]
-needs = ["package-archive"]
+needs = ["smoke-dependencies"]
 
 [tasks.smoke-dependencies]
 description = "Install the locked Smoque authoring and runtime tools."
@@ -159,27 +152,13 @@ tools = ["node"]
 inputs = ["smoke/package.smoke.ts", "smoke/tsconfig.json"]
 needs = ["smoke-dependencies"]
 
-[tasks.smoke-package]
-description = "Consume the publishable crate from a fresh external binary."
-run = [
-  "node",
-  "smoke/node_modules/smoque/dist/cli/main.js",
-  "run",
-  "smoke/package.smoke.ts",
-  "--ci",
-]
-tools = ["cargo", "node"]
-inputs = ["smoke/package.smoke.ts"]
-resources = ["cargo-target"]
-needs = ["smoke-dependencies"]
-
 [tasks.smoke]
 description = "Validate the publishable artifact through Smoque."
-needs = ["smoke-typecheck", "smoke-package"]
+needs = ["smoke-typecheck", "package-test"]
 
 [tasks.package]
 description = "Validate the complete publishable crate archive."
-needs = ["package-test", "smoke"]
+needs = ["smoke"]
 
 [tasks.check]
 description = "Run complete local bytebudget qualification."

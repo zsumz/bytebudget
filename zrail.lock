@@ -12,7 +12,7 @@ dependency = []
 [[gate]]
 name = "check"
 path = "zcheck.toml"
-sha256 = "024887100ad9f3c1081274c3c306815e1e5fb2accfc2f87bc6897fea775662be"
+sha256 = "8441c534de299bd5a81eb69b4972f20d584ce80188cb16b478828554eb0c7b61"
 
 [[gate.input]]
 path = ".github/workflows/ci.yml"
@@ -68,7 +68,7 @@ sha256 = "1ddc57cda323f4f70c916727b58b954b22a523d0ea267396fe29c3fd4af6219d"
 
 [[gate.input]]
 path = "smoke/package.smoke.ts"
-sha256 = "73a1ca1343e55bf472bd89fdc6cbef077dcdafafaa5200aadc87f522aa7d19a5"
+sha256 = "2d9349ebe23a632945c2ed671709952440a54cfa5afa1fdc0ee769f688e42fc5"
 
 [[gate.input]]
 path = "smoke/tsconfig.json"

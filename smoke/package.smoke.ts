@@ -41,6 +41,12 @@ smoke.suite(
 
     const packageStem = `bytebudget-${packageVersion}`;
     const packageDirectory = work.path("package-target", "package", packageStem);
+    const packageManifest = work.path(
+      "package-target",
+      "package",
+      packageStem,
+      "Cargo.toml",
+    );
     const archive = work.path(
       "package-target",
       "package",
@@ -81,6 +87,26 @@ smoke.suite(
         `${packageStem}/zrail.toml`,
         `${packageStem}/zrail.lock`,
       ]);
+    });
+
+    await t.step("test the extracted publishable crate", async () => {
+      await t.cmd(
+        "cargo",
+        [
+          "+1.88.0",
+          "test",
+          "--manifest-path",
+          packageManifest,
+          "--all-targets",
+          "--locked",
+          "--offline",
+        ],
+        {
+          cwd: root,
+          env: { CARGO_TARGET_DIR: work.path("package-test-target") },
+          timeout: "2m",
+        },
+      );
     });
 
     const consumer = work.path("consumer");
