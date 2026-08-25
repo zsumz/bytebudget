@@ -44,6 +44,47 @@ fn bounded_mailbox_measures_once_and_releases_the_admission_charge() {
 }
 
 #[test]
+fn admitted_growth_reserves_the_delta_before_replacing_storage() {
+    let mut storage = Vec::with_capacity(4);
+    storage.extend_from_slice(&[1, 2, 3]);
+    let value = Payload { storage };
+    let charged = value.retained_bytes();
+    let mut entry = Entry { value, charged };
+    let mut budget = ByteBudget::new(ByteCount::new(64));
+    budget.try_reserve(entry.charged).unwrap();
+
+    let mut replacement = Vec::with_capacity(16);
+    replacement.extend_from_slice(&entry.value.storage);
+    let candidate = Payload { storage: replacement };
+    let candidate_charge = candidate.retained_bytes();
+    let additional = candidate_charge
+        .checked_sub(entry.charged)
+        .expect("replacement storage does not shrink");
+
+    budget.try_reserve(additional).unwrap();
+    entry.value = candidate;
+    entry.charged = candidate_charge;
+
+    assert_eq!(budget.used(), entry.charged);
+    assert_eq!(entry.value.retained_bytes(), entry.charged);
+    budget.release(entry.charged).unwrap();
+    assert_eq!(budget.used(), ByteCount::ZERO);
+}
+
+#[test]
+fn aggregate_budget_cannot_authenticate_release_provenance() {
+    let first = ByteCount::new(30);
+    let second = ByteCount::new(70);
+    let mut budget = ByteBudget::new(ByteCount::new(100));
+    budget.try_reserve(first).unwrap();
+    budget.try_reserve(second).unwrap();
+
+    budget.release(ByteCount::new(40)).unwrap();
+
+    assert_eq!(budget.used(), ByteCount::new(60));
+}
+
+#[test]
 fn transactional_admission_rolls_back_the_exact_first_charge() {
     let first = ByteCount::new(6);
     let second = ByteCount::new(5);

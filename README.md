@@ -68,6 +68,17 @@ that stored charge later. Do not measure the value again during release.
 Container accounting remains consumer-owned; there are no blanket container
 implementations.
 
+## Charge lifetime and provenance
+
+A stored charge must remain a conservative upper bound for the value's
+retained storage for its entire lifetime in the bounded owner. If an admitted
+value can grow, reserve the additional charge before installing that growth and
+update the stored charge in the same transaction. Otherwise, prohibit growth.
+
+`ByteBudget` validates aggregate arithmetic, not charge ownership. Releasing
+the wrong charge succeeds whenever that count does not exceed aggregate use.
+Keep the exact charge beside each admitted value and release it exactly once.
+
 ## Budget operations are transactional
 
 A budget maintains `used <= limit`. Reservation succeeds exactly when the

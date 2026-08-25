@@ -72,11 +72,13 @@ evidence = [
 
 [[invariant]]
 id = "OWNERSHIP-01"
-title = "Owners measure once and release the stored admission charge"
+title = "Owners preserve exact conservative charges across ownership"
 status = "enforced"
-document = "README.md#measurement-happens-once"
+document = "README.md#charge-lifetime-and-provenance"
 evidence = [
   "rust-test:tests/personas.rs::bounded_mailbox_measures_once_and_releases_the_admission_charge",
+  "rust-test:tests/personas.rs::admitted_growth_reserves_the_delta_before_replacing_storage",
+  "rust-test:tests/personas.rs::aggregate_budget_cannot_authenticate_release_provenance",
   "rust-test:tests/personas.rs::transactional_admission_rolls_back_the_exact_first_charge",
   "rust-test:tests/personas.rs::partial_drain_releases_completed_segments_incrementally",
   "rust-test:tests/personas.rs::shared_backing_storage_is_conservatively_charged_per_reference",

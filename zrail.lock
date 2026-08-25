@@ -2,7 +2,7 @@
 schema = 1
 semantics = 2
 producer = "0.0.2"
-contract_sha256 = "73b17f0e2cddb648c9210da4bb770088d79fdac1063fa6913cd44aeb93926505"
+contract_sha256 = "04c105de57813b06c01899f3e6a8e7a451979835291f6f9f0bc6b3865f70cc8a"
 ratchet = []
 
 [[package]]
@@ -40,7 +40,7 @@ sha256 = "18a4de52385f6b988782639d5d0cc1326e5a8c2de9a7f01d7b20d9aedcc60943"
 
 [[gate.input]]
 path = "README.md"
-sha256 = "feea261e053dd893766d7eecb3f91fd79b4b5a7e9fe70c69a3a9e34b43ebf2fc"
+sha256 = "3d3e7dd62f451b5bf08f6820cef3bd704952836ec8184f875023b6dc814927ec"
 
 [[gate.input]]
 path = "bytebudget-logo.svg"

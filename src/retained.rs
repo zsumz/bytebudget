@@ -20,9 +20,20 @@ use crate::ByteCount;
 /// value. A type whose retained charge might not fit in `u64` should expose a
 /// domain-specific fallible measurement instead of implementing this trait.
 ///
-/// A bounded owner measures exactly once at admission and stores that charge
-/// beside the admitted value. It releases the stored admission charge later;
-/// it does not measure the value again during release.
+/// For an immutable admitted value, a bounded owner measures exactly once at
+/// admission and stores that charge beside the value. It releases the stored
+/// charge later; it does not measure the value again during release.
+///
+/// The stored charge must remain a conservative upper bound for the value's
+/// retained storage for its entire lifetime in the bounded owner. Before an
+/// admitted value grows, the owner must reserve any additional charge and
+/// update the stored charge in the same transaction; otherwise it must prohibit
+/// growth.
+///
+/// [`crate::ByteBudget`] validates aggregate arithmetic, not charge provenance.
+/// Releasing an incorrect charge succeeds whenever that count does not exceed
+/// aggregate use. The owner must therefore keep the exact charge beside each
+/// admitted value and release that charge exactly once.
 ///
 /// Container implementations are intentionally consumer-owned.
 ///
@@ -39,6 +50,15 @@ use crate::ByteCount;
 /// ```
 pub trait Retained {
     /// Returns the variable storage retained by this value.
+    ///
+    /// Ignoring a measurement is rejected when unused results are denied.
+    ///
+    /// ```compile_fail
+    /// #![deny(unused_must_use)]
+    /// use bytebudget::Retained;
+    /// ().retained_bytes();
+    /// ```
+    #[must_use = "retained-storage measurements must be admitted or stored"]
     fn retained_bytes(&self) -> ByteCount;
 }
 
