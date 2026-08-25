@@ -76,13 +76,13 @@ impl ByteCount {
     }
 }
 
-/// An integer cannot represent a byte count without loss.
+/// A byte-count conversion cannot preserve the source value exactly.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct ByteCountOverflow;
 
 impl fmt::Display for ByteCountOverflow {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str("byte count does not fit the target integer type")
+        formatter.write_str("byte-count conversion would lose information")
     }
 }
 

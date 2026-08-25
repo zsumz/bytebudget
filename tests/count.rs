@@ -95,11 +95,11 @@ fn usize_accepts_every_byte_count_on_64_bit_targets() {
 }
 
 #[test]
-fn conversion_error_is_a_core_error_with_stable_diagnostic_text() {
+fn conversion_error_is_direction_neutral_and_stable() {
     fn assert_error<T: core::error::Error>() {}
     assert_error::<ByteCountOverflow>();
     assert_eq!(
         ByteCountOverflow.to_string(),
-        "byte count does not fit the target integer type"
+        "byte-count conversion would lose information"
     );
 }
