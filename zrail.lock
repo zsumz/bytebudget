@@ -40,7 +40,7 @@ sha256 = "18a4de52385f6b988782639d5d0cc1326e5a8c2de9a7f01d7b20d9aedcc60943"
 
 [[gate.input]]
 path = "README.md"
-sha256 = "3d3e7dd62f451b5bf08f6820cef3bd704952836ec8184f875023b6dc814927ec"
+sha256 = "c7f77b72e7b6eddf2223e242837ca7f55930c670c62d4deac6b8c1dd7f7a2465"
 
 [[gate.input]]
 path = "bytebudget-logo.svg"

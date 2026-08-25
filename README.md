@@ -10,32 +10,45 @@
 </p>
 
 <p align="center">
+  <a href="#install">Install</a>
+  <span> · </span>
   <a href="#use">Use</a>
   <span> · </span>
   <a href="#model">Model</a>
   <span> · </span>
   <a href="#measurement-happens-once">Retained storage</a>
   <span> · </span>
+  <a href="#version-policy">Version policy</a>
+  <span> · </span>
   <a href="#scope">Scope</a>
 </p>
 
 <br />
+
+## Install
+
+```toml
+[dependencies]
+bytebudget = "=0.0.1-rc.1"
+```
 
 ## Use
 
 ```rust
 use bytebudget::{ByteBudget, ByteCount};
 
-let mut budget = ByteBudget::new(ByteCount::new(1_024));
-let charge = ByteCount::new(256);
+fn main() {
+    let mut budget = ByteBudget::new(ByteCount::new(1_024));
+    let charge = ByteCount::new(256);
 
-budget.try_reserve(charge)?;
-assert_eq!(budget.available(), ByteCount::new(768));
+    budget
+        .try_reserve(charge)
+        .expect("the budget has enough capacity");
+    assert_eq!(budget.available(), ByteCount::new(768));
 
-budget.release(charge)?;
-assert_eq!(budget.used(), ByteCount::ZERO);
-
-# Ok::<(), Box<dyn std::error::Error>>(())
+    budget.release(charge).expect("the charge is in use");
+    assert_eq!(budget.used(), ByteCount::ZERO);
+}
 ```
 
 ## Model
@@ -104,6 +117,13 @@ zcheck run check
 The canonical graph covers formatting, Clippy, Rust 1.88 and stable tests,
 doctests, rustdoc, `no_std`, mutation qualification, package verification, and
 zrail architecture policy.
+
+## Version policy
+
+The minimum supported Rust version is 1.88 and the qualification graph executes
+it directly. MSRV increases are treated as compatibility changes. Before 1.0,
+releases may deliberately refine the public API; use an exact version pin when
+evaluating a release candidate.
 
 ## License
 
