@@ -96,9 +96,11 @@ See the full
 ## Version policy
 
 The minimum supported Rust version is 1.88 and the qualification graph executes
-it directly. MSRV increases are compatibility changes. Before 1.0, releases may
-deliberately refine the public API; use an exact version pin when evaluating a
-release candidate.
+it directly. A future supported, non-prerelease line must preserve the public
+API, accounting contracts, and MSRV across patch releases. Breaking changes
+require an explicitly announced new compatibility line. The current release
+candidate does not yet make that stable-release promise; use an exact version
+pin when evaluating it.
 
 ## License
 
